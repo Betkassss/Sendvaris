@@ -1,0 +1,262 @@
+Išsami Lokalių Paslaugų Platformos Programa
+Preview
+Code
+
+import React, { useState, useEffect } from 'react';
+import { Trash2, Plus, Star, Edit, Search, Filter } from 'lucide-react';
+
+// Pradinis paslaugų ir kategorijų sąrašas
+const initialServices = [
+  {
+    id: 1,
+    title: 'Augalų laistymas',
+    description: 'Profesionaliai pasirūpinsiu jūsų augalais jums išvykus',
+    price: 10,
+    provider: 'Jonas Žaliūkas',
+    rating: 4.7,
+    category: 'Namų priežiūra',
+    location: 'Vilnius'
+  },
+  {
+    id: 2,
+    title: 'Dokumentų vertimas',
+    description: 'Greitas dokumentų vertimas lietuvių-anglų kalbomis',
+    price: 15,
+    provider: 'Aušra Kalbaitė',
+    rating: 4.9,
+    category: 'Vertimo paslaugos',
+    location: 'Kaunas'
+  },
+  {
+    id: 3,
+    title: 'Profesionali fotografija',
+    description: 'Nuotraukų sesija miesto centre su profesionalia įranga',
+    price: 50,
+    provider: 'Lukas Foto',
+    rating: 4.5,
+    category: 'Fotografijos paslaugos',
+    location: 'Klaipėda'
+  }
+];
+
+const ServicesPlatform = () => {
+  const [services, setServices] = useState(initialServices);
+  const [filteredServices, setFilteredServices] = useState(initialServices);
+  const [newService, setNewService] = useState({
+    title: '',
+    description: '',
+    price: 0,
+    provider: '',
+    category: '',
+    location: ''
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [editingService, setEditingService] = useState(null);
+
+  // Kategorijų sąrašas
+  const categories = [
+    'Namų priežiūra', 
+    'Vertimo paslaugos', 
+    'Fotografijos paslaugos', 
+    'Kompiuterių remontas', 
+    'Dizaino paslaugos'
+  ];
+
+  // Paieškos ir filtravimo funkcija
+  useEffect(() => {
+    const results = services.filter(service => 
+      service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredServices(results);
+  }, [searchTerm, services]);
+
+  // Paslaugos pridėjimo funkcija
+  const addService = () => {
+    if (!newService.title || !newService.description) {
+      alert('Privaloma užpildyti pavadinimą ir aprašymą!');
+      return;
+    }
+    
+    const serviceToAdd = {
+      ...newService,
+      id: services.length + 1,
+      rating: 0
+    };
+
+    setServices([...services, serviceToAdd]);
+    setNewService({ 
+      title: '', 
+      description: '', 
+      price: 0, 
+      provider: '', 
+      category: '',
+      location: ''
+    });
+  };
+
+  // Paslaugos redagavimo funkcija
+  const editService = (service) => {
+    setEditingService(service);
+    setNewService(service);
+  };
+
+  // Paslaugos atnaujinimo funkcija
+  const updateService = () => {
+    if (!newService.title || !newService.description) {
+      alert('Privaloma užpildyti pavadinimą ir aprašymą!');
+      return;
+    }
+
+    setServices(services.map(service => 
+      service.id === editingService.id ? {...newService, id: service.id, rating: service.rating} : service
+    ));
+
+    // Atkuriame pradines reikšmes
+    setNewService({ 
+      title: '', 
+      description: '', 
+      price: 0, 
+      provider: '', 
+      category: '',
+      location: ''
+    });
+    setEditingService(null);
+  };
+
+  // Paslaugos šalinimo funkcija
+  const deleteService = (id) => {
+    const confirmDelete = window.confirm('Ar tikrai norite pašalinti šią paslaugą?');
+    if (confirmDelete) {
+      setServices(services.filter(service => service.id !== id));
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 bg-gray-100">
+      <h1 className="text-3xl font-bold text-center mb-8 text-blue-600">Lokalių Paslaugų Platforma</h1>
+      
+      {/* Paieškos ir filtravimo sekcija */}
+      <div className="mb-6 flex space-x-4">
+        <div className="relative flex-grow">
+          <input 
+            type="text"
+            placeholder="Ieškoti paslaugų..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full p-3 pl-10 border rounded-lg"
+          />
+          <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+        </div>
+      </div>
+
+      {/* Paslaugų sąrašas */}
+      <div className="space-y-4 mb-6">
+        {filteredServices.map(service => (
+          <div 
+            key={service.id} 
+            className="bg-white p-5 rounded-lg shadow-md flex justify-between items-center"
+          >
+            <div>
+              <h2 className="font-bold text-xl text-blue-700">{service.title}</h2>
+              <p className="text-gray-600 mb-2">{service.description}</p>
+              <div className="flex items-center space-x-3">
+                <span className="flex items-center">
+                  <Star size={16} fill="gold" className="mr-1" />
+                  {service.rating}/5
+                </span>
+                <span className="text-green-600 font-semibold">€{service.price}</span>
+                <span className="text-gray-500">Teikėjas: {service.provider}</span>
+                <span className="text-blue-500 bg-blue-100 px-2 rounded">
+                  {service.category}
+                </span>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <button 
+                onClick={() => editService(service)}
+                className="text-blue-500 hover:bg-blue-100 p-2 rounded"
+              >
+                <Edit size={20} />
+              </button>
+              <button 
+                onClick={() => deleteService(service.id)}
+                className="text-red-500 hover:bg-red-100 p-2 rounded"
+              >
+                <Trash2 size={20} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Naujos paslaugos pridėjimo/redagavimo forma */}
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-2xl font-semibold mb-4">
+          {editingService ? 'Redaguoti Paslaugą' : 'Pridėti Naują Paslaugą'}
+        </h2>
+        <div className="space-y-4">
+          <input 
+            type="text"
+            placeholder="Paslaugos pavadinimas"
+            value={newService.title}
+            onChange={(e) => setNewService({...newService, title: e.target.value})}
+            className="w-full p-3 border rounded-lg"
+          />
+          <textarea 
+            placeholder="Išsamus paslaugos aprašymas"
+            value={newService.description}
+            onChange={(e) => setNewService({...newService, description: e.target.value})}
+            className="w-full p-3 border rounded-lg"
+            rows="3"
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <input 
+              type="number"
+              placeholder="Kaina"
+              value={newService.price}
+              onChange={(e) => setNewService({...newService, price: Number(e.target.value)})}
+              className="w-full p-3 border rounded-lg"
+            />
+            <input 
+              type="text"
+              placeholder="Jūsų vardas"
+              value={newService.provider}
+              onChange={(e) => setNewService({...newService, provider: e.target.value})}
+              className="w-full p-3 border rounded-lg"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <select
+              value={newService.category}
+              onChange={(e) => setNewService({...newService, category: e.target.value})}
+              className="w-full p-3 border rounded-lg"
+            >
+              <option value="">Pasirinkite kategoriją</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+            <input 
+              type="text"
+              placeholder="Jūsų miestas"
+              value={newService.location}
+              onChange={(e) => setNewService({...newService, location: e.target.value})}
+              className="w-full p-3 border rounded-lg"
+            />
+          </div>
+          <button 
+            onClick={editingService ? updateService : addService}
+            className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition flex items-center justify-center"
+          >
+            <Plus size={20} className="mr-2" /> 
+            {editingService ? 'Atnaujinti Paslaugą' : 'Pridėti Paslaugą'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ServicesPlatform
